@@ -1,0 +1,58 @@
+// models/task.js
+const mongoose = require('mongoose');
+
+const taskSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  completed: Boolean,
+});
+
+module.exports = mongoose.model('Task', taskSchema);
+const express = require('express');
+const app = express();
+const mongoose = require('mongoose');
+const Task = require('./models/task');
+
+// Middleware for parsing JSON data
+app.use(express.json());
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost/your-database-name', { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Routes for CRUD operations
+app.post('/tasks', async (req, res) => {
+  // Create a new task
+  const task = new Task(req.body);
+  await task.save();
+  res.json(task);
+});
+
+app.get('/tasks', async (req, res) => {
+  // Retrieve all tasks
+  const tasks = await Task.find();
+  res.json(tasks);
+});
+
+app.get('/tasks/:id', async (req, res) => {
+  // Retrieve a specific task by ID
+  const task = await Task.findById(req.params.id);
+  res.json(task);
+});
+
+app.put('/tasks/:id', async (req, res) => {
+  // Update a specific task by ID
+  const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(task);
+});
+
+app.delete('/tasks/:id', async (req, res) => {
+  // Delete a specific task by ID
+  await Task.findByIdAndDelete(req.params.id);
+  res.sendStatus(204);
+});
+
+// Start the server
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
